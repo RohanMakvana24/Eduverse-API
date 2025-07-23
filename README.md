@@ -19,10 +19,10 @@ http://localhost:2421/
 
 Eduverse uses **URI versioning** to support backward compatibility and iterative improvements.
 
-| Version | Status       | Path Prefix | Deprecation Date | Notes                      |
-|---------|--------------|-------------|------------------|----------------------------|
-| v1      | ✅ Active | `/api/v1`   | -     | Legacy structure & fields |
-| v2      | ✅ Active     | `/api/v2`   | -                | Current and recommended   |
+| Version | Status    | Path Prefix | Deprecation Date | Notes                     |
+| ------- | --------- | ----------- | ---------------- | ------------------------- |
+| v1      | ✅ Active | `/api/v1`   | -                | Legacy structure & fields |
+| v2      | ✅ Active | `/api/v2`   | -                | Current and recommended   |
 
 > ⚠️ v1 responses include deprecation warnings via `X-API-Warning` headers.
 
@@ -32,10 +32,12 @@ Eduverse uses **URI versioning** to support backward compatibility and iterative
 
 ### 🔐 Auth API Routes
 
-| Feature              | v1 Endpoint                      | v2 Endpoint                      | Description                                  |
-|----------------------|----------------------------------|----------------------------------|----------------------------------------------|
-| 📝 Signup            | `/api/v1/auth/signup`            | `/api/v2/auth/signup`            | Register a new user                          |
-| ✅ Email Verification| `/api/v1/auth/verify-email`      | `/api/v2/auth/verify-email`      | Verify user email using OTP or token         |
+| #   | Feature               | v1 Endpoint                     | v2 Endpoint                     | Description                                 |
+| --- | --------------------- | ------------------------------- | ------------------------------- | ------------------------------------------- |
+| 1   | 📝 Signup             | `/api/v1/auth/signup`           | `/api/v2/auth/signup`           | Register a new user                         |
+| 2   | 🔁 Resend Email OTP   | `/api/v1/auth/resend-email-otp` | `/api/v2/auth/resend-email-otp` | Resend OTP to user email for verification   |
+| 3   | 🔑 Login              | `/api/v1/auth/login`            | `/api/v2/auth/login`            | Log in a user and receive JWT/session token |
+| 4   | ✅ Email Verification | `/api/v1/auth/verify-email`     | `/api/v2/auth/verify-email`     | Verify user email using OTP or token        |
 
 > 💡 v2 may include improvements like rate limiting, OTP expiry, or stronger validation.
 
@@ -48,3 +50,4 @@ git clone https://github.com/your-org/eduverse-api.git
 cd eduverse-api
 npm install
 cp .env.example .env
+```

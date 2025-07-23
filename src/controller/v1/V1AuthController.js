@@ -1,12 +1,15 @@
 import UserModel from "../../models/UserModel.js";
 import VerificationEmailQueue from "../../queue/emailQueue.js";
 import deleteImage from "../../utils/DeleteImage,.js";
+import jwt from "jsonwebtoken";
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "../../utils/Tokens.js";
 import { v4 as uuidv4 } from "uuid";
 import geoip from "geoip-lite";
+import blackListedAccessToken from "../../utils/accessTokenBlackList.js";
+import redisClient from "../../redis/redis.js";
 
 /* ♣ Signup Controller ♣ */
 export const Signup = async (req, res) => {
@@ -189,5 +192,175 @@ export const login = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/* ♣ Resend Email OTP Controller ♣ */
+export const ResendEmailOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // User Exist
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // Check if email is already verified
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already verified, try to login",
+      });
+    }
+
+    // Checl If  OTP Already Generates And check not expired
+    if (user.otp && user.otp.expiresAt > Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP already sent, please check your email",
+      });
+    }
+
+    // Generate New OTP Code
+    const otpCode = user.generateOTPCode();
+    await user.save();
+
+    // Send OTP Code To User Email
+    await VerificationEmailQueue.add("verificationEmailQueue", {
+      to: user.email,
+      subject: "New Verification Code",
+      name: user.fullname,
+      otp: otpCode,
+      user: user,
+    });
+
+    // Success Response
+    return res.status(200).json({
+      success: true,
+      message: "New verification code sent to your email",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: true,
+      message: error.message,
+    });
+  }
+};
+
+// /* ♣ Refresh Token Controller ♣ */
+export const RefreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  // Check If Refresh Token is Valid
+  try {
+    const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message:
+        error.name === "TokenExpiredError"
+          ? "Refresh token has expired. Please log in again."
+          : "Invalid refresh token. Please log in again.",
+    });
+  }
+
+  try {
+    // Check If exist refreshToken exists
+    const user = await UserModel.findOne({ refreshTokens: refreshToken });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Refresh token has expired. Please log in again.",
+      });
+    }
+
+    const accessToken = generateAccessToken(user._id);
+
+    // Success Response
+    return res.status(200).json({
+      success: true,
+      message: "Access Token Generated Succefully",
+      accessToken,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* ♣ Logout Controller ♣ */
+export const logout = async (req, res) => {
+  const { refreshToken } = req.body;
+  // Check If Refresh Token is Valid
+  try {
+    const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    // Check If exist refreshToken exists
+    const user = await UserModel.findOne({ refreshTokens: refreshToken });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Refresh token has expired. Please log in again.",
+      });
+    }
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message:
+        error.name === "TokenExpiredError"
+          ? "Refresh token has expired. Please log in again."
+          : "Invalid refresh token. Please log in again.",
+    });
+  }
+
+  try {
+    const user1 = req.user;
+    const sessionId = user1.sessions[0].sessionId;
+    const accessToken = req.accessToken;
+    await redisClient.set(`BlackListedAccessToken:${accessToken}`, "true", {
+      EX: 3600, // Blacklist for 1 hour
+    });
+    // Updated User
+    await UserModel.updateOne(
+      {
+        _id: user1._id,
+        "sessions.sessionId": sessionId,
+      },
+      {
+        $set: {
+          "sessions.$.logoutAt": Date.now(),
+          "sessions.$.active": false,
+        },
+        $pull: {
+          refreshTokens: refreshToken,
+        },
+      }
+    );
+
+    // Success Response
+    return res.status(200).json({
+      success: true,
+      message: "User Logout Succefully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* `♣` Forgot Password Controller `♣` */
+export const ForgotPassword = async (req, res) => {
+  try {
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

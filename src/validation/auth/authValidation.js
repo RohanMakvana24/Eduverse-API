@@ -71,3 +71,33 @@ export const LoginValidation = Joi.object({
         "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character",
     }),
 });
+
+/* ♣ Resend Email OTP Validation ♣ */
+export const ResendEmailOTPValidation = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.empty": "Email is required",
+    "string.email": "Invalid Email Address",
+    "any.required": "Email is required",
+  }),
+});
+
+/* ♣ Refresh Token Through AccessToken Generates ♣ */
+export const RefreshTokenValidation = Joi.object({
+  refreshToken: Joi.string()
+    .pattern(/^eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/)
+    .required()
+    .messages({
+      "any.required": "Refresh token is required",
+      "string.empty": "Refresh token cannot be empty",
+      "string.pattern.base": "Invalid JWT token format",
+    }),
+});
+
+/* ♣ Forogot Password Validation ♣ */
+export const ForgotPasswordValidation = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.empty": "Email is required",
+    "string.email": "Invalid Email Address",
+    "any.required": "Email is required",
+  }),
+});

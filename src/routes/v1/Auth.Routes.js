@@ -3,14 +3,22 @@ import upload from "../../middleware/upload/Multer.js";
 import { ValdiateReq } from "../../middleware/validation/ValidateReq.js";
 import {
   EmailVerificationValidation,
+  ForgotPasswordValidation,
   LoginValidation,
+  RefreshTokenValidation,
+  ResendEmailOTPValidation,
   SignupValidation,
 } from "../../validation/auth/authValidation.js";
 import {
   EmailVerification,
   login,
   Signup,
+  ResendEmailOTP,
+  RefreshToken,
+  logout,
 } from "../../controller/v1/V1AuthController.js";
+import { isAuthenticated } from "../../middleware/auth/Authenticated.js";
+import { v1 } from "uuid";
 
 const v1AuthRouter = Router();
 
@@ -30,7 +38,34 @@ v1AuthRouter.post(
   EmailVerification
 );
 
+// 🚦 Resend Verification Email OTP 🚦
+v1AuthRouter.post("/resend-email-otp", upload.none(), ResendEmailOTP);
+
 // 🚦 Login Route 🚦
 v1AuthRouter.post("/login", upload.none(), ValdiateReq(LoginValidation), login);
+
+// 🚦 Refreshtoken through accesstoken generates 🚦
+v1AuthRouter.post(
+  "/refresh-token",
+  upload.none(),
+  ValdiateReq(RefreshTokenValidation),
+  RefreshToken
+);
+
+// 🚦 Logout Route 🚦
+v1AuthRouter.post(
+  "/logout",
+  upload.none(),
+  isAuthenticated,
+  ValdiateReq(RefreshTokenValidation),
+  logout
+);
+
+// 🚦 Forgot Password Route 🚦
+v1AuthRouter.post(
+  "/forgot-password",
+  upload.none(),
+  ValdiateReq(ForgotPasswordValidation)
+);
 
 export default v1AuthRouter;
