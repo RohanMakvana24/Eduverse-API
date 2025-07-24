@@ -364,3 +364,53 @@ export const ForgotPassword = async (req, res) => {
     });
   }
 };
+
+/* ♣ Forgot Password Controller ♣ */
+export const ForgotPasswordController = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Check User Exists
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // Check is Email Verified
+    const isVerified = user.isEmailVerified;
+    if (!isVerified) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not verified" });
+    }
+
+    // Crypto To Generates Verification Tokne
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
+    // Store Verification Token In User
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpiresAt = Date.now() + 1000 * 60 * 60 * 24;
+
+    // Sending Email
+    await VerificationEmailQueue.add("verificationEmailQueue", {
+      to: user.email,
+      subject: "Forgot Password Verification",
+      name: user.fullname,
+      verificationToken: verificationToken,
+      user: user,
+    });
+
+    // Success Response
+    return res.status(200).json({
+      success: true,
+      message: "Verification email sent to your email",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

@@ -65,7 +65,8 @@ v1AuthRouter.post(
 v1AuthRouter.post(
   "/forgot-password",
   upload.none(),
-  ValdiateReq(ForgotPasswordValidation)
+  ValdiateReq(ForgotPasswordValidation),
+  ForgotPassword
 );
 
 export default v1AuthRouter;
