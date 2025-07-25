@@ -101,3 +101,28 @@ export const ForgotPasswordValidation = Joi.object({
     "any.required": "Email is required",
   }),
 });
+
+/* ♣ Reset Password Validation ♣ */
+export const ResetPasswordValidation = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.empty": "Email is required",
+    "string.email": "Invalid Email Address",
+    "any.required": "Email is required",
+  }),
+  password: Joi.string()
+    .pattern(
+      new RegExp(
+        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-={}:;'<>,.?/]).{8,}$"
+      )
+    )
+    .required()
+    .messages({
+      "string.empty": "Password is required",
+      "string.pattern.base":
+        "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character",
+    }),
+  confirmPassword: Joi.any().equal(Joi.ref("password")).required().messages({
+    "any.only": "Passwords do not match",
+    "any.required": "Confirm Password is required",
+  }),
+});

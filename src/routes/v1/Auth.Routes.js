@@ -7,6 +7,7 @@ import {
   LoginValidation,
   RefreshTokenValidation,
   ResendEmailOTPValidation,
+  ResetPasswordValidation,
   SignupValidation,
 } from "../../validation/auth/authValidation.js";
 import {
@@ -16,6 +17,9 @@ import {
   ResendEmailOTP,
   RefreshToken,
   logout,
+  ForgotPassword,
+  ResetPassword,
+  getUser,
 } from "../../controller/v1/V1AuthController.js";
 import { isAuthenticated } from "../../middleware/auth/Authenticated.js";
 import { v1 } from "uuid";
@@ -69,4 +73,14 @@ v1AuthRouter.post(
   ForgotPassword
 );
 
+// 🚦 Reset Password Route 🚦
+v1AuthRouter.post(
+  "/resetPassword/:token",
+  upload.none(),
+  ValdiateReq(ResetPasswordValidation),
+  ResetPassword
+);
+
+// 🚦 Get Current User Route 🚦
+v1AuthRouter.get("/me", isAuthenticated, getUser);
 export default v1AuthRouter;

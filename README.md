@@ -32,12 +32,17 @@ Eduverse uses **URI versioning** to support backward compatibility and iterative
 
 ### 🔐 Auth API Routes
 
-| #   | Feature               | v1 Endpoint                     | v2 Endpoint                     | Description                                 |
-| --- | --------------------- | ------------------------------- | ------------------------------- | ------------------------------------------- |
-| 1   | 📝 Signup             | `/api/v1/auth/signup`           | `/api/v2/auth/signup`           | Register a new user                         |
-| 2   | 🔁 Resend Email OTP   | `/api/v1/auth/resend-email-otp` | `/api/v2/auth/resend-email-otp` | Resend OTP to user email for verification   |
-| 3   | 🔑 Login              | `/api/v1/auth/login`            | `/api/v2/auth/login`            | Log in a user and receive JWT/session token |
-| 4   | ✅ Email Verification | `/api/v1/auth/verify-email`     | `/api/v2/auth/verify-email`     | Verify user email using OTP or token        |
+| #   | Feature               | v1 Endpoint                         | v2 Endpoint                         | Description                                      |
+| --- | --------------------- | ----------------------------------- | ----------------------------------- | ------------------------------------------------ |
+| 1   | 📝 Signup             | `/api/v1/auth/signup`               | `/api/v2/auth/signup`               | Register a new user                              |
+| 2   | 🔁 Resend Email OTP   | `/api/v1/auth/resend-email-otp`     | `/api/v2/auth/resend-email-otp`     | Resend OTP to user email for verification        |
+| 3   | 🔑 Login              | `/api/v1/auth/login`                | `/api/v2/auth/login`                | Log in a user and receive JWT/session token      |
+| 4   | ✅ Email Verification | `/api/v1/auth/verify-email`         | `/api/v2/auth/verify-email`         | Verify user email using OTP                      |
+| 5   | 🚦 Refresh Token      | `/api/v1/auth/refresh-token`        | `/api/v2/auth/refresh-token`        | Generate new access token using refresh token    |
+| 6   | 🚪 Logout             | `/api/v1/auth/logout`               | `/api/v2/auth/logout`               | Invalidate refresh token and logout user         |
+| 7   | ❓ Forgot Password    | `/api/v1/auth/forgot-password`      | `/api/v2/auth/forgot-password`      | Send reset password link/OTP to registered email |
+| 8   | 🔁 Reset Password     | `/api/v1/auth/resetPassword/:token` | `/api/v2/auth/resetPassword/:token` | Reset password using token from email            |
+| 9   | 👤 Get Current User   | `/api/v1/auth/me`                   | `/api/v2/auth/me`                   | Get authenticated user's profile/details         |
 
 > 💡 v2 may include improvements like rate limiting, OTP expiry, or stronger validation.
 

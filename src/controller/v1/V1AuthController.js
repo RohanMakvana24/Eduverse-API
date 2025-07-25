@@ -1,5 +1,8 @@
 import UserModel from "../../models/UserModel.js";
-import VerificationEmailQueue from "../../queue/emailQueue.js";
+import {
+  resetPasswordEmailQueue,
+  VerificationEmailQueue,
+} from "../../queue/emailQueue.js";
 import deleteImage from "../../utils/DeleteImage,.js";
 import jwt from "jsonwebtoken";
 import {
@@ -10,6 +13,8 @@ import { v4 as uuidv4 } from "uuid";
 import geoip from "geoip-lite";
 import blackListedAccessToken from "../../utils/accessTokenBlackList.js";
 import redisClient from "../../redis/redis.js";
+import { generateCryptoToken } from "../../utils/cryptoToken.js";
+import crypto from "crypto";
 
 /* ♣ Signup Controller ♣ */
 export const Signup = async (req, res) => {
@@ -46,7 +51,7 @@ export const Signup = async (req, res) => {
       to: newUser.email,
       subject: "Verification Code",
       name: newUser.fullname,
-      otp: otpCode,
+      otpOrLink: otpCode,
       user: newUser,
     });
 
@@ -243,10 +248,7 @@ export const ResendEmailOTP = async (req, res) => {
       message: "New verification code sent to your email",
     });
   } catch (error) {
-    return res.status(500).json({
-      success: true,
-      message: error.message,
-    });
+    return res.status(500).json({ success: true, message: error.message });
   }
 };
 
@@ -286,10 +288,7 @@ export const RefreshToken = async (req, res) => {
       accessToken,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -342,31 +341,15 @@ export const logout = async (req, res) => {
     );
 
     // Success Response
-    return res.status(200).json({
-      success: true,
-      message: "User Logout Succefully",
-    });
+    return res
+      .status(200)
+      .json({ success: true, message: "User Logout Succefully" });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
-
 /* `♣` Forgot Password Controller `♣` */
 export const ForgotPassword = async (req, res) => {
-  try {
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-/* ♣ Forgot Password Controller ♣ */
-export const ForgotPasswordController = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -375,42 +358,124 @@ export const ForgotPasswordController = async (req, res) => {
     if (!user) {
       return res
         .status(400)
-        .json({ success: false, message: "User not found" });
+        .json({ success: false, message: "User not found with this email" });
     }
 
-    // Check is Email Verified
-    const isVerified = user.isEmailVerified;
-    if (!isVerified) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not verified" });
+    // Check User Verified
+    if (!user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "User not verified, please verify your email first",
+      });
     }
 
-    // Crypto To Generates Verification Tokne
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-
-    // Store Verification Token In User
-    user.verificationToken = verificationToken;
-    user.verificationTokenExpiresAt = Date.now() + 1000 * 60 * 60 * 24;
+    // Generate Crypto Token
+    const { rawToken, hashedToken, expiresAt } = generateCryptoToken();
 
     // Sending Email
-    await VerificationEmailQueue.add("verificationEmailQueue", {
+    await resetPasswordEmailQueue.add("ResetPassswordEmail", {
       to: user.email,
-      subject: "Forgot Password Verification",
+      subject: "Reset Password Varification",
       name: user.fullname,
-      verificationToken: verificationToken,
-      user: user,
+      otpOrLink: `${process.env.APP_BASE_URL}/resetPassword/${rawToken}`,
     });
+    // Store
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordTokenExpiresAt = expiresAt;
+    await user.save();
+
+    // success response
+    return res.status(200).json({
+      success: true,
+      message: "Email sent! Follow the instructions to reset your password.",
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/* `♣` Reset Password Controller `♣` */
+export const ResetPassword = async (req, res) => {
+  try {
+    const token = req.params.token;
+    const { email, password } = req.body;
+
+    if (!token) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Token is required" });
+    }
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found with this email" });
+    }
+    if (!user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "User not verified, please verify your email first",
+      });
+    }
+
+    // Check if reset password token is valid
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(`resetPassword:${token}`)
+      .digest("hex");
+
+    // Check if token is expired
+    if (
+      !user.resetPasswordToken ||
+      user.resetPasswordToken !== hashedToken ||
+      user.resetPasswordTokenExpiresAt < Date.now()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Reset password token is invalid or has expired",
+      });
+    }
+
+    // Set new password
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordTokenExpiresAt = undefined;
+
+    // Save User
+    await user.save();
 
     // Success Response
     return res.status(200).json({
       success: true,
-      message: "Verification email sent to your email",
+      message:
+        "Password reset successfully. You can now log in with your new password.",
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/* `♣` Reset Password Controller `♣` */
+export const getUser = async (req, res) => {
+  try {
+    const user = req.user;
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Success Response
+    return res.status(200).json({
+      success: true,
+      message: "User retrieved successfully",
+      user,
     });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

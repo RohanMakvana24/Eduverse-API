@@ -1,5 +1,5 @@
 import UserModel from "../../models/UserModel.js";
-import VerificationEmailQueue from "../../queue/emailQueue.js";
+import { VerificationEmailQueue } from "../../queue/emailQueue.js";
 import deleteImage from "../../utils/DeleteImage,.js";
 import {
   generateAccessToken,

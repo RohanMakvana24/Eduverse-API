@@ -1,6 +1,12 @@
-import {Queue} from "bullmq"
-import connection from "../redis/IOredis.js"
+import { Queue } from "bullmq";
+import connection from "../redis/IOredis.js";
 
-const VerificationEmailQueue = new Queue("verificationEmailQueue", {connection})
+// `` Email Verification Email Queue `` //s
+export const VerificationEmailQueue = new Queue("verificationEmailQueue", {
+  connection,
+});
 
-export default VerificationEmailQueue;
+// `` Reset PAssword Verification Token Email Queue `` //
+export const resetPasswordEmailQueue = new Queue("resetPasswordEmailQueue", {
+  connection,
+});

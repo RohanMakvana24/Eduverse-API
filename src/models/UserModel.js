@@ -63,8 +63,8 @@ const userSchema = new mongoose.Schema(
       code: String,
       expiresAt: Date,
     },
-    verificationToken: String,
-    verificationTokenExpiresAt: Date,
+    resetPasswordToken: String,
+    resetPasswordTokenExpiresAt: Date,
     refreshTokens: [String],
     sessions: [sessionSchema],
     isActive: {
