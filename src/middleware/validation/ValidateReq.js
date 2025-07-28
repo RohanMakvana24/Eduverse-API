@@ -27,6 +27,14 @@ export const ValdiateReq = (schema, options = {}) => {
       }
     }
 
+    if (options.optionalFile && req.file) {
+      if (
+        !["image/png", "image/jpg", "image/jpeg"].includes(req.file.mimetype)
+      ) {
+        errors.push({ field: "file", message: "Avatar must be an image" });
+      }
+    }
+
     // send response if there are errors
     if (errors.length > 0) {
       return res

@@ -48,6 +48,18 @@ Eduverse uses **URI versioning** to support backward compatibility and iterative
 
 ---
 
+## 👤 User API Routes
+
+| #   | Feature                 | v1 Endpoint                        | v2 Endpoint                        | Description                                            |
+| --- | ----------------------- | ---------------------------------- | ---------------------------------- | ------------------------------------------------------ |
+| 1   | 👤 Get Profile          | `/api/v1/user/profile`             | `/api/v2/user/profile`             | Get authenticated user's profile info                  |
+| 2   | 🛠️ Update Profile Info  | `/api/v1/user/profile`             | `/api/v2/user/profile`             | Update user's profile with optional avatar upload      |
+| 3   | 🔒 Change Password      | `/api/v1/user/change-password`     | `/api/v2/user/change-password`     | Change current user's password                         |
+| 4   | 💻 View Active Sessions | `/api/v1/user/sessions`            | `/api/v2/user/sessions`            | Get list of all active login sessions for the user     |
+| 5   | 🚪 Logout from Session  | `/api/v1/user/sessions/:sessionId` | `/api/v2/user/sessions/:sessionId` | Logout from a specific device session and revoke token |
+
+---
+
 ## 🛠️ Installation
 
 ```bash

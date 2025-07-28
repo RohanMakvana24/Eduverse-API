@@ -2,6 +2,7 @@ import { Router } from "express";
 import { isAuthenticated } from "../../middleware/auth/Authenticated.js";
 import {
   ChangePassword,
+  getActiveSessions,
   GetUserProfile,
   logoutFromSession,
   UpdateUserProfile,
@@ -21,7 +22,7 @@ V1UserRoutes.get("/profile", isAuthenticated, GetUserProfile);
 V1UserRoutes.put(
   "/profile",
   upload.single("file"),
-  ValdiateReq(UpdateUserProfileSchema, { requireFile: true }),
+  ValdiateReq(UpdateUserProfileSchema, { optionalFile: true }),
   isAuthenticated,
   UpdateUserProfile
 );
@@ -29,11 +30,17 @@ V1UserRoutes.put(
 V1UserRoutes.put(
   "/change-password",
   isAuthenticated,
+  upload.none(),
   ValdiateReq(ChangePasswordSchema),
   ChangePassword
 );
 // 🚦 View active login sessions Route 🚦
-V1UserRoutes.get("/sessions", isAuthenticated);
+V1UserRoutes.get("/sessions", isAuthenticated, getActiveSessions);
 // 🚦 Logout from specific device Route 🚦
-V1UserRoutes.delete("/sessions/:sessionId", isAuthenticated, logoutFromSession);
+V1UserRoutes.delete(
+  "/sessions/:sessionId",
+  upload.none(),
+  isAuthenticated,
+  logoutFromSession
+);
 export default V1UserRoutes;

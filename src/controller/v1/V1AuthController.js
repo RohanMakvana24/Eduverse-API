@@ -302,7 +302,9 @@ export const logout = async (req, res) => {
   try {
     const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     // Check If exist refreshToken exists
-    const user = await UserModel.findOne({ refreshTokens: refreshToken });
+    const user = await UserModel.findOne({
+      "sessions.refreshTokens": refreshToken,
+    });
     if (!user) {
       return res.status(400).json({
         success: false,

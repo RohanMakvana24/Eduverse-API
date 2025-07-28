@@ -66,9 +66,16 @@ export const UpdateUserProfile = async (req, res) => {
 /* ♣ Change Password Controller  ♣ */
 export const ChangePassword = async (req, res) => {
   try {
-    const user = req.user;
+    const uid = req.user._id;
     const { currentPassword, newPassword } = req.body;
 
+    const user = await UserModel.findById(uid).select("+password");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
     // Check if current password is correct
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
@@ -126,12 +133,14 @@ export const logoutFromSession = async (req, res) => {
   try {
     const userId = req.user._id; // from auth middleware
     const { sessionId } = req.params;
+    const { refreshToken } = req.body;
 
     const user = await UserModel.findById(userId);
-    if (!user)
+    if (!user) {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
+    }
 
     const session = user.sessions.find((s) => s.sessionId === sessionId);
     if (!session || !session.active) {
@@ -145,13 +154,12 @@ export const logoutFromSession = async (req, res) => {
     session.revoked = true;
     session.logoutAt = new Date();
 
-    // Remove refreshToken from global list
-    user.refreshTokens = user.refreshTokens.filter(
-      (token) => token !== session.refreshToken
-    );
-
-    // Also remove refreshToken from session itself
-    session.refreshToken = null;
+    // Remove specific refresh token if provided
+    if (refreshToken) {
+      session.refreshTokens = session.refreshTokens.filter(
+        (token) => token !== refreshToken
+      );
+    }
 
     await user.save();
 
