@@ -105,7 +105,7 @@ export const EmailVerification = async (req, res) => {
 
     // Refresh Token
     const refreshToken = generateRefreshToken(user._id);
-    user.refreshTokens.push(refreshToken);
+
     await user.save();
 
     // Store User Session Log
@@ -120,6 +120,8 @@ export const EmailVerification = async (req, res) => {
       ipAddress: ipAddress,
       userAgent: userAgent,
       location: location,
+      refreshTokens: [refreshToken],
+      loginAt: Date.now(),
     };
 
     user.sessions.push(sessionLog);
@@ -169,7 +171,6 @@ export const login = async (req, res) => {
 
     // Refresh Token
     const refreshToken = generateRefreshToken(user._id);
-    user.refreshTokens.push(refreshToken);
 
     // Store User Session Log
     const sessionId = uuidv4();
@@ -183,6 +184,8 @@ export const login = async (req, res) => {
       ipAddress: ipAddress,
       userAgent: userAgent,
       location: location,
+      refreshTokens: [refreshToken],
+      loginAt: Date.now(),
     };
     user.sessions.push(sessionLog);
     await user.save();

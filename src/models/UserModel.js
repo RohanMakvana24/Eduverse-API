@@ -25,6 +25,7 @@ const sessionSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  refreshTokens: [String],
 });
 
 const userSchema = new mongoose.Schema(
@@ -65,7 +66,6 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordTokenExpiresAt: Date,
-    refreshTokens: [String],
     sessions: [sessionSchema],
     isActive: {
       type: Boolean,
