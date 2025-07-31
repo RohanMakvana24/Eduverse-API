@@ -14,7 +14,6 @@ export const isAuthenticated = async (req, res, next) => {
     const isBlackListedAccessToken = await redisClient.get(
       `BlackListedAccessToken:${accessToken}`
     );
-    console.log("isBlackListedAccessToken", isBlackListedAccessToken);
     if (isBlackListedAccessToken) {
       return res.status(400).json({
         success: false,

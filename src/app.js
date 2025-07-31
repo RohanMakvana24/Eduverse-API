@@ -1,46 +1,38 @@
-import dotenv from "dotenv";
-// ~ Load environment variables from .env file
-dotenv.config();
 import express from "express";
-import connectDB from "./config/database/Dbconnect.js";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import v1AuthRouter from "./routes/v1/Auth.Routes.js";
 import v2AuthRouter from "./routes/v2/Auth.Routes.js";
-import V1UserRoutes from "./routes/v1/User.Route.js";
-import { cloudinary } from "./config/cloudinary/cloudinary.js";
+import V1UserRouter from "./routes/v1/User.Route.js";
 import VerificationEmailWorker from "./worker/VerificationEmailWorker.js";
-import resetPasswordEmailWorker from "./worker/ResetPasswordEmailWorker.js";
+import resetPasswordEmailWorker from "./worker/resetPasswordEmailWorker.js";
+import V1CourseRouter from "./routes/v1/Course.Route.js";
 
-// ~ Database Configuration
-connectDB();
-
-// ~ Cloudinary Configuration
-cloudinary.api
-  .ping()
-  .then(() => console.log("Cloudinary is connected"))
-  .catch((err) => console.log(err));
-
-// ~ Server Setup
 const app = express();
 
-// ~ Middleware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(helmet());
 app.use(morgan("dev"));
 
-// ~ Routes
-const v1AuthPath = "/api/v1/auth";
-const v2AuthPath = "/api/v2/auth";
-const v1UserPath = "/api/v1/user";
+// Routes
+app.use("/api/v1/auth", v1AuthRouter);
+app.use("/api/v2/auth", v2AuthRouter);
+app.use("/api/v1/user", V1UserRouter);
+app.use("/api/v1/course", V1CourseRouter);
 
-// Auth Routes 🎯
-app.use(v1AuthPath, v1AuthRouter);
-app.use(v2AuthPath, v2AuthRouter);
-// User Routes 🎯
-app.use(v1UserPath, V1UserRoutes);
+// Global error handler — always returns JSON
+app.use((err, req, res, next) => {
+  console.error("🔥 Global Error Handler:", err);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+    error: typeof err === "object" ? JSON.stringify(err) : err,
+  });
+});
 
 export default app;

@@ -1,8 +1,5 @@
 import UserModel from "../../models/UserModel.js";
-import {
-  resetPasswordEmailQueue,
-  VerificationEmailQueue,
-} from "../../queue/emailQueue.js";
+
 import deleteImage from "../../utils/DeleteImage,.js";
 import jwt from "jsonwebtoken";
 import {
@@ -15,7 +12,10 @@ import blackListedAccessToken from "../../utils/accessTokenBlackList.js";
 import redisClient from "../../redis/redis.js";
 import { generateCryptoToken } from "../../utils/cryptoToken.js";
 import crypto from "crypto";
-
+import {
+  resetPasswordEmailQueue,
+  VerificationEmailQueue,
+} from "../../queue/emailQueue.js";
 /* ♣ Signup Controller ♣ */
 export const Signup = async (req, res) => {
   try {
@@ -46,8 +46,8 @@ export const Signup = async (req, res) => {
     const otpCode = newUser.generateOTPCode();
     await newUser.save();
 
-    // Send OTP Code To User Email
-    await VerificationEmailQueue.add("verificationEmailQueue", {
+    // // Send OTP Code To User Email
+    const job = await VerificationEmailQueue.add("verificationEmailQueue", {
       to: newUser.email,
       subject: "Verification Code",
       name: newUser.fullname,

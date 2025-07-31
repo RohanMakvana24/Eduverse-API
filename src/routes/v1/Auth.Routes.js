@@ -6,7 +6,6 @@ import {
   ForgotPasswordValidation,
   LoginValidation,
   RefreshTokenValidation,
-  ResendEmailOTPValidation,
   ResetPasswordValidation,
   SignupValidation,
 } from "../../validation/auth/authValidation.js";
@@ -22,7 +21,6 @@ import {
   getUser,
 } from "../../controller/v1/V1AuthController.js";
 import { isAuthenticated } from "../../middleware/auth/Authenticated.js";
-import { v1 } from "uuid";
 
 const v1AuthRouter = Router();
 

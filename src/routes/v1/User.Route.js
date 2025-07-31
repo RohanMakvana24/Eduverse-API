@@ -14,12 +14,12 @@ import {
   UpdateUserProfileSchema,
 } from "../../validation/users/userValidation.js";
 
-const V1UserRoutes = Router();
+const V1UserRouter = Router();
 
 // 🚦 View profile Route 🚦
-V1UserRoutes.get("/profile", isAuthenticated, GetUserProfile);
+V1UserRouter.get("/profile", isAuthenticated, GetUserProfile);
 // 🚦 Update profile info Route 🚦
-V1UserRoutes.put(
+V1UserRouter.put(
   "/profile",
   upload.single("file"),
   ValdiateReq(UpdateUserProfileSchema, { optionalFile: true }),
@@ -27,7 +27,7 @@ V1UserRoutes.put(
   UpdateUserProfile
 );
 // 🚦 Change password Route 🚦
-V1UserRoutes.put(
+V1UserRouter.put(
   "/change-password",
   isAuthenticated,
   upload.none(),
@@ -35,12 +35,12 @@ V1UserRoutes.put(
   ChangePassword
 );
 // 🚦 View active login sessions Route 🚦
-V1UserRoutes.get("/sessions", isAuthenticated, getActiveSessions);
+V1UserRouter.get("/sessions", isAuthenticated, getActiveSessions);
 // 🚦 Logout from specific device Route 🚦
-V1UserRoutes.delete(
+V1UserRouter.delete(
   "/sessions/:sessionId",
   upload.none(),
   isAuthenticated,
   logoutFromSession
 );
-export default V1UserRoutes;
+export default V1UserRouter;
