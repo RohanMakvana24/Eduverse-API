@@ -150,3 +150,41 @@ export const updateCourse = async (req, res) => {
     });
   }
 };
+
+// 📚 Delete Course Controller
+export const deleteCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    // Validation
+    if (!courseId || !mongoose.Types.ObjectId.isValid(courseId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a course ID",
+      });
+    }
+
+    // Find Course
+    const course = await CourseModel.findById(courseId);
+    if (!course) {
+      return res.status(400).json({
+        success: false,
+        message: "No course found with the given ID",
+      });
+    }
+
+    // Delete Course
+    await CourseModel.findByIdAndDelete(courseId);
+
+    // Success Response
+    return res.status(200).json({
+      success: true,
+      message: "Course Deleted Succefully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

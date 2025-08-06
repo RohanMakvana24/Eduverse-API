@@ -9,6 +9,7 @@ import {
 } from "../../validation/course/CourseValidationSchema.js";
 import {
   createCourse,
+  deleteCourse,
   getAllCourse,
   getSingleCourse,
   updateCourse,
@@ -18,26 +19,38 @@ export const V1CourseRouter = Router();
 
 // 🚦  Course API Route 🚦
 
-/* `` Create a new course ``  */
+/* `` Create a new course route ``  */
 V1CourseRouter.post(
   "/create",
   upload.single("file"),
   isAuthenticated,
+  authorizeRole("instructor"),
   ValdiateReq(CreateCourseValidate, { requireFile: true }),
   createCourse
 );
 
-/* `` Get All Course  ``  */
+/* `` Get All Course Route ``  */
 V1CourseRouter.get("/courses", getAllCourse);
 
-/* `` Get Single Course  ``  */
+/* `` Get Single Course Route  ``  */
 V1CourseRouter.get("/:courseId", getSingleCourse);
 
-/* ` Update Course  ``  */
+/* `` Update Course Route  ``  */
 V1CourseRouter.put(
   "/:courseId",
   upload.single("file"),
+  isAuthenticated,
+  authorizeRole("instructor"),
   ValdiateReq(UpdateCourseValidation, { optionalFile: true }),
   updateCourse
 );
+
+/* `` Delete Course Course  ``  */
+V1CourseRouter.delete(
+  "/:courseId",
+  isAuthenticated,
+  authorizeRole("instructor"),
+  deleteCourse
+);
+
 export default V1CourseRouter;
