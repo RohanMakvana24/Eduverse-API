@@ -19,34 +19,79 @@ export const ValdiateReq = (schema, options = {}) => {
         );
       }
 
-      if (options.requiredCourseFiles) {
-        if (!Array.isArray(req.files)) {
-          errors.push({
-            field: "files",
-            message: "No files were uploaded",
+      // File Validation
+      if (options.requireFile) {
+        const file = req.file;
+        if (!file) {
+          return res.status(400).json({
+            success: false,
+            message: "File is required",
           });
-        } else {
-          const thumbnailFile = req.files.find(
-            (f) => f.fieldname === "thumbnail"
-          );
-          if (!thumbnailFile) {
-            errors.push({
-              field: "thumbnail",
-              message: "Thumbnail is required",
-            });
-          }
+        }
 
-          const videoFiles = req.files.filter(
-            (f) => f.fieldname.split(".").pop() === "video"
-          );
-          if (videoFiles.length === 0) {
-            errors.push({
-              field: "video",
-              message: "At least one video is required",
+        const allowedTypes = [
+          "image/jpg",
+          "image/png",
+          "image/jpge",
+          "image/webp",
+        ];
+        if (!allowedTypes.includes(file.mimetype)) {
+          return res.status(400).json({
+            success: false,
+            message: "Only JPEG, PNG, JPG, or WEBP images are allowed",
+          });
+        }
+      }
+
+      // Optional File Validation
+      if (options.optionalFile) {
+        const file = req.file;
+
+        if (file) {
+          const allowedTypes = [
+            "image/jpg",
+            "image/png",
+            "image/jpge",
+            "image/webp",
+          ];
+          if (!allowedTypes.includes(file.mimetype)) {
+            return res.status(400).json({
+              success: false,
+              message: "Only JPEG, PNG, JPG, or WEBP images are allowed",
             });
           }
         }
       }
+
+      // Course File Validation
+      // if (options.requiredCourseFiles) {
+      //   if (!Array.isArray(req.files)) {
+      //     errors.push({
+      //       field: "files",
+      //       message: "No files were uploaded",
+      //     });
+      //   } else {
+      //     const thumbnailFile = req.files.find(
+      //       (f) => f.fieldname === "thumbnail"
+      //     );
+      //     if (!thumbnailFile) {
+      //       errors.push({
+      //         field: "thumbnail",
+      //         message: "Thumbnail is required",
+      //       });
+      //     }
+
+      //     const videoFiles = req.files.filter(
+      //       (f) => f.fieldname.split(".").pop() === "video"
+      //     );
+      //     if (videoFiles.length === 0) {
+      //       errors.push({
+      //         field: "video",
+      //         message: "At least one video is required",
+      //       });
+      //     }
+      //   }
+      // }
 
       if (errors.length > 0) {
         return res.status(400).json({

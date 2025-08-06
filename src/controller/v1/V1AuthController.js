@@ -25,10 +25,10 @@ export const Signup = async (req, res) => {
     const user = await UserModel.findOne({ email });
 
     if (user) {
+      await deleteImage(req.file.filename);
       return res
         .status(400)
         .json({ success: false, message: "User already exists" });
-      await deleteImage(req.file.filename);
     }
 
     // Store User

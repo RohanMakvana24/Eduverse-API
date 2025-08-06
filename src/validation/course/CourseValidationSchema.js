@@ -83,3 +83,22 @@ export const CreateCourseValidate = Joi.object({
   published: Joi.boolean().default(false),
   instructor: ObjectId.required(),
 });
+
+/* `` Update Course Validation `` */
+export const UpdateCourseValidation = Joi.object({
+  title: Joi.string().required().trim().messages({
+    "string.empty": "title is required",
+    "string.any": "Title is required",
+  }),
+  description: Joi.string().required().trim().messages({
+    "string.empty": "Description is required",
+    "any.required": "Description is required",
+  }),
+  price: Joi.number().required().messages({
+    "number.base": "Price must be a number",
+    "any.required": "Price is required",
+  }),
+  isFree: Joi.boolean().default(false).messages({
+    "boolean.base": "isFree must be a boolean",
+  }),
+});
