@@ -1,5 +1,5 @@
 import Joi from "joi";
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 // Helper Object Id Validation
 const ObjectId = Joi.string().custom((value, helpers) => {
   if (!mongoose.Types.ObjectId.isValid(value)) {
@@ -101,4 +101,31 @@ export const UpdateCourseValidation = Joi.object({
   isFree: Joi.boolean().default(false).messages({
     "boolean.base": "isFree must be a boolean",
   }),
+});
+
+/* `` Create Course Section Validation `` */
+export const CreateSectionValidation = Joi.object({
+  title: Joi.string().required().messages({
+    "any.required": "Title is required",
+    "string.base": "Title must be a string",
+  }),
+  description: Joi.string().allow("").optional(),
+});
+
+/* `` Update Course Section Validation `` */
+export const UpdateCourseSection = Joi.object({
+  title: Joi.string().required().messages({
+    "any.required": "Title is required",
+    "string.base": "Title must be a string",
+  }),
+  description: Joi.string().allow("").optional(),
+});
+
+/* `` Update Course Section Validation `` */
+export const CreateChapterSchema = Joi.object({
+  title: Joi.string().required().messages({
+    "any.required": "Title is required",
+    "string.base": "Title must be a string",
+  }),
+  description: Joi.string().allow("").optional(),
 });
